@@ -12,6 +12,7 @@ import { checkThroughNewsAPI } from "./utils/newsApiUtils";
 import { checkThroughGoogle } from "./utils/googleSearch";
 import { createBotEvent } from "./db/botEvents";
 import puppeteer from "puppeteer";
+import { checkThroughBingAiChat } from "./utils/bingAISearch";
 
 let browser, page;
 
@@ -27,9 +28,8 @@ let browser, page;
     );
     console.log("Browser started");
   } catch (er) {
-    console.log("Error occured while starting browser", er)
+    console.log("Error occured while starting browser", er);
   }
-  
 })();
 
 const bot = new Telegraf(config.botToken);
@@ -231,8 +231,14 @@ bot.command("check", async (ctx) => {
       const resultGoogle = await checkThroughGoogle(searchTerm, ctx);
       let resultNum = resultGoogle;
 
+      if(resultNum === 3){
+        console.log("Didn't get a result from Google Search. Trying BingAiSearch\n");
+        const resultBing = await checkThroughBingAiChat(searchTerm, ctx);
+        resultNum = resultBing;
+      }
+
       if (resultNum === 3) {
-        console.log("Didn't get a result from Google Search. Trying newsAPI\n");
+        console.log("Didn't get a result from BingAiSearch. Trying newsAPI\n");
         const resultNews = await checkThroughNewsAPI(searchTerm, ctx);
         resultNum = resultNews;
       }
